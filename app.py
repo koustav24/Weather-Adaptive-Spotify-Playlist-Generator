@@ -1,17 +1,50 @@
+from dotenv import load_dotenv
+
+load_dotenv()
+
 import os
 import requests
 from flask import Flask, session, redirect, url_for, render_template, request
 import spotipy
+from setuptools.package_index import user_agent
 from spotipy.oauth2 import SpotifyOAuth
 
+
+from flask import Flask, render_template, request
+
+app = Flask(__name__)
+
+
+@app.route('/')
+def index():
+    # renders the main page
+    return render_template('index.html')
+
+
+# Explicitly define '/result' route with GET and POST
+@app.route('/result', methods=['POST', 'GET'])
+def result():
+    if request.method == 'POST':
+        city = request.form['city']
+        mood = request.form['mood']
+        # Call functions to fetch weather and Spotify playlist
+        # Assume you have a function get_playlist(city, mood)
+        playlist, weather, temp, error = get_playlist(city, mood)
+
+        # Render the result template passing necessary context
+        return render_template('result.html', playlist=playlist, city=city, mood=mood, weather=weather, temp=temp,
+                               error=error)
+    else:
+        # Redirect users manually accessing by GET back to homepage
+        return render_template('index.html')
 # Initialize Flask app
 app = Flask(__name__)
 app.secret_key = os.urandom(24)  # Secure key for session management
 
 # Load API keys from environment variables
-SPOTIFY_CLIENT_ID = os.environ.get('SPOTIFY_CLIENT_ID')
-SPOTIFY_CLIENT_SECRET = os.environ.get('SPOTIFY_CLIENT_SECRET')
-OPENWEATHER_API_KEY = os.environ.get('OPENWEATHER_API_KEY')
+SPOTIFY_CLIENT_ID = os.environ.get('b64cc448fc474e15a0e1148dc3debe69')
+SPOTIFY_CLIENT_SECRET = os.environ.get('2b56310a143e430ea833d0f97a0acf39')
+OPENWEATHER_API_KEY = os.environ.get('4c2785dfdad5e3ef91c5ebf685ea7a38')
 
 # Configure Spotify OAuth
 sp_oauth = SpotifyOAuth(
